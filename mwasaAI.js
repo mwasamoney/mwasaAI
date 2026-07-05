@@ -70,9 +70,39 @@ async function authentification() {
     }
 }
 authentification();
-const store = (0, baileys_1.makeInMemoryStore)({
-    logger: pino().child({ level: "silent", stream: "store" }),
-});
+// Baileys mpya (6.7+) iliondoa makeInMemoryStore kabisa.
+// Hii ni polyfill nyepesi inayofanya kazi ileile: kuhifadhi ujumbe kwa ajili
+// ya quote/reply, na kuhifadhi anwani (contacts).
+const _messageStore = new Map();
+const store = {
+    contacts: {},
+    bind(ev) {
+        ev.on('messages.upsert', ({ messages }) => {
+            for (const msg of messages) {
+                if (msg && msg.key && msg.key.id) {
+                    const k = msg.key.remoteJid + ":" + msg.key.id;
+                    _messageStore.set(k, msg);
+                    if (_messageStore.size > 5000) {
+                        _messageStore.delete(_messageStore.keys().next().value);
+                    }
+                }
+            }
+        });
+        ev.on('contacts.upsert', (contacts) => {
+            for (const c of contacts) {
+                if (c && c.id) this.contacts[c.id] = Object.assign({}, this.contacts[c.id], c);
+            }
+        });
+        ev.on('contacts.update', (updates) => {
+            for (const c of updates) {
+                if (c && c.id) this.contacts[c.id] = Object.assign({}, this.contacts[c.id], c);
+            }
+        });
+    },
+    async loadMessage(jid, id) {
+        return _messageStore.get(jid + ":" + id);
+    }
+};
 setTimeout(() => {
     async function main() {
         const { version, isLatest } = await (0, baileys_1.fetchLatestBaileysVersion)();
@@ -98,7 +128,7 @@ setTimeout(() => {
             getMessage: async (key) => {
                 if (store) {
                     const msg = await store.loadMessage(key.remoteJid, key.id, undefined);
-                    return msg.message || undefined;
+                    return (msg && msg.message) || undefined;
                 }
                 return {
                     conversation: 'An Error Occurred, Repeat Command!'
