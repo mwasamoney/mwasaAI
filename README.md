@@ -3,7 +3,7 @@
   
 
 
-<p align="center">                                                  MwasaAI-𝐌𝐃 
+<p align="center">                                                  𝐦𝐰𝐚𝐬𝐚𝐀𝐈 
   
 
 </p>
@@ -26,7 +26,7 @@
 #### SETUP 
 
 
-[`FORK`](https://github.com/criss-vevo/mwasaAI/fork)
+[`FORK`](https://github.com/YOUR-GITHUB-USERNAME/mwasaAI/fork)
 
 
  
@@ -46,7 +46,7 @@
 
 2. `If You Have a Heroku Account`
 
-  - <a align="center"><a href="https://dashboard.heroku.com/new?template=https://github.com/criss-vevo/mwasaAI/tree/main"> <img src="https://img.shields.io/badge/DEPLOY%20NOW-blue?style=for-the-badge&logo=heroku" width="220" height="38.45"/></a></p>
+  - <a align="center"><a href="https://dashboard.heroku.com/new?template=https://github.com/YOUR-GITHUB-USERNAME/mwasaAI/tree/main"> <img src="https://img.shields.io/badge/DEPLOY%20NOW-blue?style=for-the-badge&logo=heroku" width="220" height="38.45"/></a></p>
 
 
 #### DEPLOY ON RENDER 
