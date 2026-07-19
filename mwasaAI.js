@@ -141,20 +141,29 @@ store.bind(zk.ev);
 
 // ---- PAIRING CODE (badala ya QR - inafaa zaidi kwa server kama Render/VPS) ----
 if (!state.creds.registered) {
-    const rawNumber = (conf.NUMERO_OWNER || "").replace(/[^0-9]/g, "");
-    setTimeout(async () => {
-        try {
-            const code = await zk.requestPairingCode(rawNumber);
-            console.log("\n\n========================================");
-            console.log("🔑 PAIRING CODE YAKO: " + code);
-            console.log("Kwenye WhatsApp yako: Settings → Linked Devices →");
-            console.log("Link a Device → Link with phone number instead");
-            console.log("Ingiza namba hiyo hapo.");
-            console.log("========================================\n\n");
-        } catch (e) {
-            console.log("⚠️ Imeshindikana kutengeneza pairing code: " + e.message);
-        }
-    }, 3000);
+    const pairingFlagPath = __dirname + "/auth/.pairing_requested";
+    if (!fs.existsSync(pairingFlagPath)) {
+        const rawNumber = (conf.NUMERO_OWNER || "").replace(/[^0-9]/g, "");
+        setTimeout(async () => {
+            try {
+                const code = await zk.requestPairingCode(rawNumber);
+                console.log("\n\n========================================");
+                console.log("🔑 PAIRING CODE YAKO: " + code);
+                console.log("Kwenye WhatsApp yako: Settings → Linked Devices →");
+                console.log("Link a Device → Link with phone number instead");
+                console.log("Ingiza namba hiyo HARAKA (kabla ya sekunde ~60).");
+                console.log("========================================\n\n");
+                fs.writeFileSync(pairingFlagPath, "requested:" + Date.now());
+            } catch (e) {
+                console.log("⚠️ Imeshindikana kutengeneza pairing code: " + e.message);
+            }
+        }, 3000);
+    } else {
+        // Tayari tumeomba code awali - usiombe nyingine, subiri tu muunganiko.
+        // (Ikiwa umepitwa na muda / unataka code mpya kabisa, redeploy - Render
+        // inafuta 'auth/' automatic kila deploy mpya kwa sababu hifadhi si ya kudumu.)
+        console.log("ℹ️ Pairing code ilishaombwa awali kwa jaribio hili, inasubiri muunganiko...");
+    }
 }
 // ---- MWISHO WA PAIRING CODE ----
         
@@ -1047,36 +1056,37 @@ zk.ev.on('group-participants.update', async (group) => {
                 let raisonDeconnexion = new boom_1.Boom(lastDisconnect?.error)?.output.statusCode;
                 if (raisonDeconnexion === baileys_1.DisconnectReason.badSession) {
                     console.log('Session id error, rescan again...');
+                    return;
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason.connectionClosed) {
                     console.log('!!! connexion fermée, reconnexion en cours ...');
-                    main();
+                    setTimeout(() => main(), 3000);
+                    return;
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason.connectionLost) {
                     console.log('connection error 😞 ,,, trying to reconnect... ');
-                    main();
+                    setTimeout(() => main(), 3000);
+                    return;
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason?.connectionReplaced) {
                     console.log('connexion réplacée ,,, une sesssion est déjà ouverte veuillez la fermer svp !!!');
+                    return;
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason.loggedOut) {
                     console.log('vous êtes déconnecté,,, veuillez rescanner le code qr svp');
+                    return;
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason.restartRequired) {
                     console.log('redémarrage en cours ▶️');
-                    main();
+                    setTimeout(() => main(), 1000);
+                    return;
                 }   else {
 
                     console.log('redemarrage sur le coup de l\'erreur  ',raisonDeconnexion) ;         
                     //repondre("* Redémarrage du bot en cour ...*");
-
-                                const {exec}=require("child_process") ;
-
-                                exec("pm2 restart all");            
+                    setTimeout(() => main(), 3000);
+                    return;
                 }
-                // sleep(50000)
-                console.log("hum " + connection);
-                main(); //console.log(session)
             }
         });
         //fin événement connexion
