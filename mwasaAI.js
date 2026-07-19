@@ -47,6 +47,15 @@ const  {addGroupToBanList,isGroupBanned,removeGroupFromBanList} = require("./bdd
 const {isGroupOnlyAdmin,addGroupToOnlyAdminList,removeGroupFromOnlyAdminList} = require("./bdd/onlyAdmin");
 //const //{loadCmd}=require("/framework/mesfonctions")
 let { reagir } = require(__dirname + "/framework/app");
+
+// ---- Server ndogo ya "port" (Render Web Service inahitaji port ifunguliwe,
+// vinginevyo inauwa/kurestart container - jambo linalokatiza pairing ya WhatsApp) ----
+require("http").createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("mwasaAI iko hai ✅");
+}).listen(process.env.PORT || 5000, () => {
+    console.log("🌐 Health-check port inaendesha kwenye " + (process.env.PORT || 5000));
+});
 var session = conf.session.replace(/mwasaAI-WHATSAPP-BOT;;;=>/g,"");
 const prefixe = conf.PREFIXE;
 const more = String.fromCharCode(8206)
