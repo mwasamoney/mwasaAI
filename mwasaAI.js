@@ -111,7 +111,7 @@ setTimeout(() => {
             version,
             logger: pino({ level: "silent" }),
             browser: ['mwasaAI', "safari", "1.0.0"],
-            printQRInTerminal: true,
+            printQRInTerminal: false,
             fireInitQueries: false,
             shouldSyncHistoryMessage: true,
             downloadHistory: true,
@@ -138,6 +138,25 @@ setTimeout(() => {
         };
         const zk = (0, baileys_1.default)(sockOptions);
 store.bind(zk.ev);
+
+// ---- PAIRING CODE (badala ya QR - inafaa zaidi kwa server kama Render/VPS) ----
+if (!state.creds.registered) {
+    const rawNumber = (conf.NUMERO_OWNER || "").replace(/[^0-9]/g, "");
+    setTimeout(async () => {
+        try {
+            const code = await zk.requestPairingCode(rawNumber);
+            console.log("\n\n========================================");
+            console.log("🔑 PAIRING CODE YAKO: " + code);
+            console.log("Kwenye WhatsApp yako: Settings → Linked Devices →");
+            console.log("Link a Device → Link with phone number instead");
+            console.log("Ingiza namba hiyo hapo.");
+            console.log("========================================\n\n");
+        } catch (e) {
+            console.log("⚠️ Imeshindikana kutengeneza pairing code: " + e.message);
+        }
+    }, 3000);
+}
+// ---- MWISHO WA PAIRING CODE ----
         
         
 
